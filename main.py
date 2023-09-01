@@ -46,9 +46,9 @@ while True:
         browser.get(url)
         time.sleep(5)
         
-        if initial_count % 60 == 0:
-            msg_ping = 'Ping'
-            send_message_ping(bot_token, chat_id, msg_ping)
+        if initial_count % 2 == 0:
+            msg = 'Ping'
+            send_message(bot_token, chat_id, msg)
         ## Armazena o codigo fonte da página ##
         page_source = browser.page_source
         soup = BeautifulSoup(page_source, 'html.parser')
@@ -63,21 +63,26 @@ while True:
         all_p_text = '\n'.join(p_texts)
 
         preco_dividido = soup.find("p", class_="sc-hKMtZM hUIHbE").find(class_="brastemp-componentsv2-2-x-currencyContainer").get_text(strip=True)
-        preco_formatado = re.sub(r'[R$,\. ]', '', preco_dividido)
-        preco_final = int(preco_formatado)
+        preco_dividido_formatado = re.sub(r'[R$,\. ]', '', preco_dividido)
+        preco_dividido_f = int(preco_dividido_formatado)
         
-        # if preco_final < 740000:
-        #     print('Now warriors!')
-        # else:
-        #     print('Wait for it!')
-        # print(preco_formatado)
-        # print(preco_final)
-        
-        if all_p_text != preco_inicial:
+        preco_cartao = soup.find("p", class_="sc-eCYdqJ jwbBLn").find(class_="brastemp-componentsv2-2-x-currencyContainer").get_text(strip=True)
+        preco_cartao_formatado = re.sub(r'[R$,\. ]', '', preco_cartao)
+        preco_cartao_f = int(preco_cartao_formatado)
+
+        preco_pix = soup.find("p", class_="sc-jSMfEi hmCyZr").find(class_="brastemp-componentsv2-2-x-currencyContainer").get_text(strip=True)
+        preco_pix_formatado = re.sub(r'[R$,\. ]', '', preco_pix)
+        preco_pix_f = int(preco_pix_formatado)
+      
+        print(preco_dividido)
+        print(preco_cartao)
+        print(preco_pix)
+
+        if all_p_text != preco_inicial and preco_cartao_f < 6_600_00:
             print(all_p_text)
             preco_inicial = all_p_text
             msg = f'''{loja}\n{all_p_text}'''
             send_message(bot_token, chat_id, msg)       
-        time.sleep(55)
+        time.sleep(15)
     except:
         continue
