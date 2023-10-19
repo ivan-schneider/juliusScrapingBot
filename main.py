@@ -11,14 +11,15 @@ import nest_asyncio
 from bs4 import BeautifulSoup
 import re
 
-# url2 = 'https://www.google.com/'
-url = 'https://www.brastemp.com.br/geladeira-brastemp-inverse-3-frost-free-419-litros-cor-inox-com-freeze-control-pro-bry59ck/p?idsku=326031070&utmi_cp=cpc&utmi_campaign=cpc&gclid=Cj0KCQjwuNemBhCBARIsADp74QQr8AOLV3d-fgZVfsxlwFL8Hg9j3vdwh3vXrKvwFec9yVzbZN73gG4aAnnYEALw_wcB'
+amazon = 'https://www.amazon.com.br/Geladeira-Frost-Free-Panasonic-Escovado/dp/B08KH1VYGF/ref=sr_1_5?brr=1&qid=1695350664&rd=1&refinements=p_89%3APanasonic%2Cp_n_feature_ten_browse-bin%3A118645779011&rnid=75337509011&s=appliances&sr=1-5&ufe=app_do%3Aamzn1.fos.25548f35-0de7-44b3-b28e-0f56f3f96147&th=1'
+panasonic = 'https://loja.panasonic.com.br/geladeira-frost-free-panasonic-aco-escovado-nr-bb71pvfx/p?skuId=45012'
+carrefour = 'https://www.carrefour.com.br/geladeira-panasonic-a-frost-free-480l-aco-escovado-nr-bb71pvfx-220v-5942870/p'
 headers = {'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"}
 browser = webdriver.Chrome()
+# wait = WebDriverWait(browser, 5)
 
-site = requests.get(url, headers= headers)
-soup = BeautifulSoup(site.content, 'html.parser')
-loja = 'Site Brastemp'
+# site = requests.get(panasonic, headers= headers)
+# soup = BeautifulSoup(site.content, 'html.parser')
 
 bot_token: Final = '6424891430:AAHTgF7FhVjLiJXoyhuCbyeBWr56eMjRcq8'
 bot: Final = '@maodevaca_bot'
@@ -29,60 +30,76 @@ def send_message(token, chat_id, message):
     data = {"chat_id": chat_id, "text": msg}
     url = "https://api.telegram.org/bot{}/sendMessage".format(bot_token)
     requests.post(url, data)
-
-def send_message_ping(token, chat_id, message):
-    data1 = {"chat_id": chat_id, "text": msg_ping}
-    url = "https://api.telegram.org/bot{}/sendMessage".format(bot_token)
-    requests.post(url, data1)
     
 ## Variáveis de controle de preco e contador de chamados ##
-preco_inicial = '0'
 initial_count = 0
+p_preco_avista_inicial = '0'
+p_preco_parcelado_inicial = '0'
+a_preco_avista_inicial = '0'
+a_preco_parcelado_inicial = '0'
+c_preco_avista_inicial = '0'
+c_preco_parcelado_inicial = '0'
 
-## Abre o navegador e realiza o request do site Brastemp ##
+## Abre o navegador e realiza o request do site desejado##
 while True:
     try:
+        ## Contador de chamados aos sites para ping 
         initial_count += 1
-        browser.get(url)
-        time.sleep(5)
-        
-        if initial_count % 2 == 0:
+        if initial_count % 120 == 0:
             msg = 'Ping'
             send_message(bot_token, chat_id, msg)
+
+        browser.get(panasonic)
+        time.sleep(10)
         ## Armazena o codigo fonte da página ##
         page_source = browser.page_source
         soup = BeautifulSoup(page_source, 'html.parser')
-        
-        ## Dentro da fonte armazenada, acha o elemento preco ## 
-        p_tags = soup.find("div", class_="sc-gsnTZi").find_all("p")
-        ## Para cada parágrafo, armazena no array o texto ##
-        p_texts = []
-        for p in p_tags:
-         p_texts.append(p.get_text(strip=False))
-    
-        all_p_text = '\n'.join(p_texts)
+     
+        p_preco_avista =  soup.find("span", class_="vtex-product-price-1-x-sellingPriceValue vtex-product-price-1-x-sellingPriceValue--compra-flutuante").get_text(strip=False)
+        p_preco_parcelado = soup.find("span", class_="vtex-product-price-1-x-installments vtex-product-price-1-x-installments--compra-flutuante").get_text(strip=False)
 
-        preco_dividido = soup.find("p", class_="sc-hKMtZM hUIHbE").find(class_="brastemp-componentsv2-2-x-currencyContainer").get_text(strip=True)
-        preco_dividido_formatado = re.sub(r'[R$,\. ]', '', preco_dividido)
-        preco_dividido_f = int(preco_dividido_formatado)
-        
-        preco_cartao = soup.find("p", class_="sc-eCYdqJ jwbBLn").find(class_="brastemp-componentsv2-2-x-currencyContainer").get_text(strip=True)
-        preco_cartao_formatado = re.sub(r'[R$,\. ]', '', preco_cartao)
-        preco_cartao_f = int(preco_cartao_formatado)
+        # print('Panasonic ' + p_preco_avista)
+        # print('Panasonic ' +  p_preco_parcelado)
 
-        preco_pix = soup.find("p", class_="sc-jSMfEi hmCyZr").find(class_="brastemp-componentsv2-2-x-currencyContainer").get_text(strip=True)
-        preco_pix_formatado = re.sub(r'[R$,\. ]', '', preco_pix)
-        preco_pix_f = int(preco_pix_formatado)
-      
-        print(preco_dividido)
-        print(preco_cartao)
-        print(preco_pix)
+        browser.get(amazon)
+        time.sleep(10)
+        ## Armazena o codigo fonte da página ##
+        page_source = browser.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+     
+        a_preco_avista =  soup.find("span", class_="a-offscreen").get_text(strip=False)
+        a_preco_parcelado = soup.find("span", class_="best-offer-name a-text-bold").get_text(strip=False)
 
-        if all_p_text != preco_inicial and preco_cartao_f < 6_600_00:
-            print(all_p_text)
-            preco_inicial = all_p_text
-            msg = f'''{loja}\n{all_p_text}'''
+        # print('Amazon ' + a_preco_avista)
+        # print('Amazon ' +  a_preco_parcelado)
+
+        browser.get(carrefour)
+        time.sleep(10)
+        ## Armazena o codigo fonte da página ##
+        page_source = browser.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+     
+        c_preco_avista =  soup.find("span", class_="carrefourbr-carrefour-components-0-x-currencySellingPrice").get_text(strip=False)
+        c_preco_parcelado = soup.find("div", class_="carrefourbr-carrefour-components-0-x-installmentPrice").get_text(strip=False)
+
+        # print('Carrefour ' + c_preco_avista)
+        # print('Carrefour ' +  c_preco_parcelado)
+
+        if  p_preco_avista_inicial != p_preco_avista or p_preco_parcelado_inicial != p_preco_parcelado or a_preco_avista_inicial != a_preco_avista or a_preco_parcelado_inicial != a_preco_parcelado or c_preco_avista_inicial != c_preco_avista or c_preco_parcelado_inicial != c_preco_parcelado:
+            print('Panasonic ' + p_preco_avista)
+            print('Panasonic ' +  p_preco_parcelado)
+            print('Amazon ' + a_preco_avista)
+            print('Amazon ' +  a_preco_parcelado)
+            print('Carrefour ' + c_preco_avista)
+            print('Carrefour ' +  c_preco_parcelado)
+            p_preco_avista_inicial = p_preco_avista
+            p_preco_parcelado_inicial = p_preco_parcelado
+            a_preco_avista_inicial = a_preco_avista
+            a_preco_parcelado_inicial = a_preco_parcelado
+            c_preco_avista_inicial = c_preco_avista
+            c_preco_parcelado_inicial = c_preco_parcelado
+            msg = f'''{'Site Panasonic'}\n{p_preco_avista + '  a vista'}\n{p_preco_parcelado}\n\n{'Site Amazon'}\n{a_preco_avista + '  a vista'}\n{a_preco_parcelado}\n\n{'Site Carrefour'}\n{c_preco_avista + '  a vista'}\n{c_preco_parcelado}'''
             send_message(bot_token, chat_id, msg)       
-        time.sleep(15)
+        time.sleep(30)
     except:
         continue
